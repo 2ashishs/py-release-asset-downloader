@@ -4,8 +4,10 @@ A python tkinter based cross-platform GUI utility to download release assets fro
 
 Simply paste and save the Github repo URL. Fetch latest release asset. Download asset!
 
-To install, clone the repo, `cd` into the repo directory and type `pip install .`
+To install,
+ - run `pip install git+https://github.com/2ashishs/py-release-asset-downloader` OR
+ - clone the repo, `cd` into the repo directory and type `pip install .`
 
-To run, type `rad` on the command-line.
+To run, execute `rad` on the command-line.
 
 ![Release Asset Downloader](ScreenShot.png)
