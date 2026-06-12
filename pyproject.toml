@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rad"
+version = "1.0.0"
+description = "A lightweight tkinter GUI to download release assets, currently only from Github."
+readme = "README.md"
+requires-python = ">=3.7"
+
+[project.scripts]
+rad = "rad.app:main"
