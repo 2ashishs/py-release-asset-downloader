@@ -3,13 +3,15 @@ import os
 import sys
 import json
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, messagebox
 from urllib.request import urlopen, Request
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 import threading
+from datetime import datetime
 
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "repos_gui.json")
+DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
 
 class ReleaseDownloaderApp:
     def __init__(self, root):
@@ -263,15 +265,27 @@ class ReleaseDownloaderApp:
             return
 
         download_url = self.fetched_assets[selected_asset]
-        save_path = filedialog.asksaveasfilename(
-            initialdir=os.getcwd(),
-            initialfile=selected_asset,
-            title="Save Asset As"
-        )
         
-        if not save_path:
-            return
+        # Ensure the ~/Downloads folder actually exists (creates it if missing)
+        os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+        
+        # Split filename and its extension (e.g., 'vlc-setup' and '.exe')
+        name_part, ext_part = os.path.splitext(selected_asset)
+        
+        # If it's a tar.gz, split correctly to keep '.tar.gz' together
+        if selected_asset.endswith('.tar.gz'):
+            name_part = selected_asset[:-7]
+            ext_part = '.tar.gz'
 
+        target_path = os.path.join(DOWNLOAD_DIR, selected_asset)
+
+        # Collision Handling: If file exists, append a unique timestamp suffix
+        if os.path.exists(target_path):
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            new_filename = f"{name_part}_{timestamp}{ext_part}"
+            target_path = os.path.join(DOWNLOAD_DIR, new_filename)
+
+        # Set up UI lock controls
         self.download_in_progress = True
         self.download_btn.config(state=tk.DISABLED)
         self.refresh_btn.config(state=tk.DISABLED)
@@ -279,7 +293,11 @@ class ReleaseDownloaderApp:
         self.fetch_btn.config(state=tk.DISABLED)
         self.animation_counter = 0
         
-        threading.Thread(target=self.execute_download, args=(download_url, save_path), daemon=True).start()
+        # Track the directory for the "Open File Location" button later
+        self.last_download_directory = DOWNLOAD_DIR
+        
+        # Kick off download in the background
+        threading.Thread(target=self.execute_download, args=(download_url, target_path), daemon=True).start()
         self.animate_status_bar()
 
     def animate_status_bar(self):
